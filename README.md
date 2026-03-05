@@ -1,6 +1,16 @@
 # HyperBlog - Multi-Blog Next.js Demo
 
-This repository implements a multi-blog platform using subfolder routing with Next.js App Router.
+This repository implements a multi-blog platform using subfolder routing with Next.js 16 App Router.
+
+## Objective
+
+This project demonstrates:
+
+- Next.js App Router routing
+- Edge middleware / proxy rewriting
+- Server-rendered SEO metadata
+- Performance optimization via dynamic imports
+- Modular architecture with reusable data layer
 
 ## Routes
 
@@ -16,7 +26,7 @@ Implementation: [app/[blogSlug]/page.tsx](app/[blogSlug]/page.tsx)
 
 ## Rendering Choice
 
-Rendering mode is **Server Components + static pre-rendering for known slugs**.
+Rendering uses Server Components with static pre-rendering for known blog slugs.
 
 - Blog pages are Server Components (no client directive on route file).
 - `generateStaticParams` pre-renders the three known blog routes at build time.
@@ -93,27 +103,25 @@ Files:
 
 ## Scaling Plan (Bonus)
 
-To support main domain, subdomains, and subfolder blogs at scale:
+To support main domain, subdomains, and subfolder blogs in a production system:
 
-1. Domain resolution layer
-- Store tenant mapping in DB/cache: host/subdomain/header -> tenant config.
-- Resolve tenant in proxy and attach tenant id in request headers.
+1. Domain-based routing
+- Use the request host header in the proxy to detect subdomains.
+- Example: `tech.example.com` could internally rewrite to `/tech-blog`.
 
-2. Routing strategy
-- Keep App Router dynamic segment (`/[blogSlug]`) for subfolder URLs.
-- Add host-based rewriting for subdomains (`tech.example.com -> /tech-blog` or tenant-aware path).
+2. Blog data storage
+- Replace the static `lib/blogs.ts` data with a database or CMS.
+- Fetch blog content using the slug from the URL.
 
-3. Data isolation
-- Move from static `lib/blogs.ts` to tenant-aware data service.
-- Fetch by `(tenantId, blogSlug)`.
+3. Caching and revalidation
+- Use Next.js caching or ISR to keep blog pages fast while allowing updates.
+- Frequently visited pages could also be cached at the CDN level.
 
-4. Caching
-- Use route segment caching/revalidation per tenant.
-- Add CDN caching for public blog pages.
+4. SEO handling
+- Generate canonical URLs based on the current domain.
+- Generate sitemap and robots.txt automatically for blog pages.
 
-5. SEO at scale
-- Generate canonical URLs based on active host strategy.
-- Produce per-tenant sitemap/robots and metadata.
+This approach keeps the routing logic simple while allowing the platform to support many blogs across multiple domains.
 
 ## Run Locally
 
@@ -122,4 +130,18 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open in browser:
+
+http://localhost:3000
+
+Example routes:
+
+/tech-blog  
+/travel-blog  
+/design-blog  
+
+Test proxy rewrite:
+
+```bash
+curl -H "x-blog-domain: tech" http://localhost:3000
+```
