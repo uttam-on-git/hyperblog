@@ -13,12 +13,15 @@ const headingFont = Lora({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://hyperblog.local"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  ),
   title: {
     default: "HyperBlog",
     template: "%s | HyperBlog",
   },
-  description: "Multi-blog platform demo with dynamic routing and proxy rewrites.",
+  description:
+    "Multi-blog platform demo with dynamic routing and proxy rewrites.",
   alternates: {
     canonical: "/",
   },
@@ -38,7 +41,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${bodyFont.variable} ${headingFont.variable} antialiased`}>
+      <body
+        className={`${bodyFont.variable} ${headingFont.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
